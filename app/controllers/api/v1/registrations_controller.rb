@@ -1,4 +1,6 @@
 class Api::V1::RegistrationsController < ApplicationController
+  before_action :authenticate_request, except: :register
+  
   def register
     @user = User.new(user_params)
     
