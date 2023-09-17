@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
+      get 'jobs/index'
+      get 'jobs/show'
+      get 'jobs/create'
+      get 'jobs/update'
+      get 'jobs/destroy'
       get 'sessions/login'
       get 'registrations/register'
     end
