@@ -2,13 +2,20 @@ class Api::V1::SessionsController < ApplicationController
   before_action :authenticate_request, except: :login
   
   def login
-    @user = User.find_by(username: params[:username])
-    if @user && @user.authenticate(params[:password])
-      # User found and password verified
-      token = JsonWebToken.encode({user_id: @user.id, username: @user.username, exp: 7.days.from_now.to_i})
-      render json: { token: token, user: {username: @user.username} }, status: :ok
+    email = params[:email]
+    password = params[:password]
+
+    if email.blank? || password.blank?
+      render json: { error: 'Please provide email and password' }, status: :bad_request
+      return
+    end
+    
+    @user = User.find_by(email: email)
+    if @user && @user.authenticate(password)
+      token = JsonWebToken.encode({user_id: @user.id, name: @user.name, exp: 7.days.from_now.to_i})
+      render json: { token: token, user: {name: @user.name} }, status: :ok
     else
-      render json: { error: 'Invalid username or password' }, status: :unauthorized
+      render json: { error: 'Invalid Credentials' }, status: :unauthorized
     end  
   end
 end

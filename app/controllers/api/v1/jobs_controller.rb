@@ -8,7 +8,11 @@ class Api::V1::JobsController < ApplicationController
   end
 
   def show
-    render json: {job: @job}, status: :ok
+    if @job.author == @current_user
+      render json: { job: @job }, status: :ok
+    else
+      render json: { error: 'Job not found' }, status: :not_found
+    end
   end
 
   def create
@@ -23,18 +27,26 @@ class Api::V1::JobsController < ApplicationController
   end
 
   def update
-    if @job.update(job_params)
-      render json: { job: @job }, status: :ok
+    if @job.author == @current_user
+      if @job.update(job_params)
+        render json: { job: @job }, status: :ok
+      else
+        render json: { errors: @job.errors }, status: :unprocessable_entity
+      end
     else
-      render json: { errors: @job.errors }, status: :unprocessable_entity
+      render json: { error: 'Unauthorized to update this job' }, status: :unauthorized
     end
   end
 
   def destroy
-    if @job.destroy
-      head :no_content #shorthand way to set the response status to 204 No Content without including a response body
+    if @job.author == @current_user
+      if @job.destroy
+        head :no_content # Shorthand way to set the response status to 204 No Content without including a response body
+      else
+        render json: { errors: @job.errors }, status: :unprocessable_entity
+      end
     else
-      render json: { errors: @job.errors }, status: :unprocessable_entity
+      render json: { error: 'Unauthorized to delete this job' }, status: :unauthorized
     end
   end
 
